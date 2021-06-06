@@ -1,5 +1,5 @@
 {
-  "name": "esbuild-plugin-less",
+  "name": "@arnog/esbuild-plugin-less",
   "version": "1.0.0",
   "description": "Plugin for `esbuild` to import `.less` files in JavaScript or TypeScript",
   "main": "index.js",
