@@ -1,6 +1,6 @@
-import path from "path";
-import { promises as fs } from "fs";
-import less from "less";
+const path = require("path");
+const fs = require("fs").promises;
+const less = require("less");
 
 const importRegex = /@import(?:\s+\((.*)\))?\s+['"](.*)['"]/;
 const globalImportRegex = /@import(?:\s+\((.*)\))?\s+['"](.*)['"]/g;
@@ -59,7 +59,7 @@ function convertLessError(error) {
   };
 }
 
-export default function (options = {}) {
+module.exports = (options = {}) => {
   return {
     name: "css-file",
     setup(buildArg) {
@@ -104,4 +104,4 @@ export default function (options = {}) {
       });
     },
   };
-}
+};
