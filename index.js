@@ -15,7 +15,7 @@ function getLessImports(filePath) {
     const content = fs.readFileSync(filePath).toString("utf8");
 
     const cleanContent = content.replace(importCommentRegex, "");
-    const match = cleanContent.match(globalImportRegex) || [];
+    const match = cleanContent.match(globalImportRegex) ?? [];
 
     const fileImports = match
       .map((el) => {
@@ -63,7 +63,7 @@ module.exports = (options = {}) => {
   return {
     name: "css-file",
     setup(buildArg) {
-      buildArg.onResolve({ filter: /\.less$/ }, (args) => {
+      buildArg.onResolve({ filter: /\.less$/, namespace: "file" }, (args) => {
         const filePath = path.resolve(
           process.cwd(),
           path.relative(process.cwd(), args.resolveDir),
@@ -75,33 +75,36 @@ module.exports = (options = {}) => {
           watchFiles: !!buildArg.initialOptions.watch
             ? [filePath, ...getLessImports(filePath)]
             : undefined,
-          namespace: "css-file",
         };
       });
 
-      buildArg.onLoad({ filter: /.*/, namespace: "css-file" }, async (args) => {
-        const content = await fs.readFile(args.path, "utf-8");
-        const dir = path.dirname(args.path);
-        const filename = path.basename(args.path);
-        try {
-          const result = await less.render(content, {
-            filename,
-            rootpath: dir,
-            ...options,
-            paths: [...(options.paths || []), dir],
-          });
+      buildArg.onLoad(
+        { filter: /\.less$/, namespace: "file" },
+        async (args) => {
+          const content = await fs.readFile(args.path, "utf-8");
+          const dir = path.dirname(args.path);
+          const filename = path.basename(args.path);
+          try {
+            const result = await less.render(content, {
+              filename,
+              rootpath: dir,
+              ...options,
+              paths: [...(options.paths ?? []), dir],
+            });
 
-          return {
-            contents: result.css,
-            loader: "text",
-          };
-        } catch (e) {
-          return {
-            errors: [convertLessError(e)],
-            resolveDir: dir,
-          };
+            return {
+              contents: result.css,
+              loader: "text",
+              resolveDir: dir,
+            };
+          } catch (e) {
+            return {
+              errors: [convertLessError(e)],
+              resolveDir: dir,
+            };
+          }
         }
-      });
+      );
     },
   };
 };
